@@ -1,0 +1,1 @@
+console.log("BlackOut background service worker loaded");

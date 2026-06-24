@@ -1,0 +1,1 @@
+console.log("BlackOut content script loaded");
