@@ -70,6 +70,24 @@ function createBlackoutBox(x, y, width, height)
     box.style.width = width + "px";
     box.style.height = height + "px";
 
+    const deleteButton = document.createElement("div");
+
+    deleteButton.className = "blackout-delete";
+
+    deleteButton.textContent = "✕";
+
+    deleteButton.addEventListener("click", (event) =>
+    {
+        event.stopPropagation();
+
+        box.remove();
+
+        blackoutState.boxes =
+            blackoutState.boxes.filter(item => item !== box);
+    });
+
+    box.appendChild(deleteButton);
+
     blackoutState.canvas.appendChild(box);
 
     blackoutState.boxes.push(box);
