@@ -14,3 +14,25 @@
 
     background: transparent;
 }
+
+#blackout-preview
+{
+    position: absolute;
+
+    border: 2px dashed #ffffff;
+
+    background: rgba(0, 0, 0, 0.15);
+
+    pointer-events: none;
+
+    box-sizing: border-box;
+}
+
+.blackout-active
+{
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+
+    -webkit-user-drag: none;
+}

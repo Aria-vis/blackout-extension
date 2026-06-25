@@ -1,8 +1,17 @@
 const blackoutState =
 {
     active: false,
+
     canvas: null,
-    boxes: []
+
+    boxes: [],
+
+    drawing: false,
+
+    startX: 0,
+    startY: 0,
+
+    preview: null
 };
 
 function createCanvas() {
@@ -19,6 +28,94 @@ function createCanvas() {
     blackoutState.canvas = canvas;
 
     console.log("BlackOut canvas created");
+}
+
+function createPreview()
+{
+    if (blackoutState.preview)
+    {
+        return;
+    }
+
+    const preview = document.createElement("div");
+
+    preview.id = "blackout-preview";
+
+    blackoutState.canvas.appendChild(preview);
+
+    blackoutState.preview = preview;
+}
+
+function removePreview()
+{
+    if (!blackoutState.preview)
+    {
+        return;
+    }
+
+    blackoutState.preview.remove();
+
+    blackoutState.preview = null;
+}
+
+function handleMouseDown(event)
+{
+    if (!blackoutState.active)
+    {
+        return;
+    }
+
+    if (event.button !== 0)
+    {
+        return;
+    }
+
+    event.preventDefault();
+
+    blackoutState.drawing = true;
+
+    blackoutState.startX = event.clientX;
+    blackoutState.startY = event.clientY;
+
+    createPreview();
+}
+
+function handleMouseMove(event)
+{
+    if (!blackoutState.drawing)
+    {
+        return;
+    }
+
+    event.preventDefault();
+
+    const x = Math.min(event.clientX, blackoutState.startX);
+
+    const y = Math.min(event.clientY, blackoutState.startY);
+
+    const width = Math.abs(event.clientX - blackoutState.startX);
+
+    const height = Math.abs(event.clientY - blackoutState.startY);
+
+    blackoutState.preview.style.left = x + "px";
+
+    blackoutState.preview.style.top = y + "px";
+
+    blackoutState.preview.style.width = width + "px";
+
+    blackoutState.preview.style.height = height + "px";
+}
+
+function handleMouseUp(event)
+{
+    if (!blackoutState.drawing)
+    {
+        return;
+    }
+
+    blackoutState.drawing = false;
+
+    removePreview();
 }
 
 function removeCanvas() {
@@ -38,7 +135,17 @@ function activateBlackout() {
 
     document.body.style.cursor = "crosshair";
 
+    document.documentElement.classList.add("blackout-active");
+
     createCanvas();
+
+    document.addEventListener("mousedown", handleMouseDown);
+
+    document.addEventListener("mousemove", handleMouseMove);
+
+    document.addEventListener("mouseup", handleMouseUp);
+
+    document.addEventListener("dragstart", preventDefaultDrag);
 }
 
 function deactivateBlackout() {
@@ -46,7 +153,31 @@ function deactivateBlackout() {
 
     document.body.style.cursor = "";
 
+    document.documentElement.classList.remove("blackout-active");
+
+    removePreview();
+
+    blackoutState.drawing = false;
+
+    document.removeEventListener("mousedown", handleMouseDown);
+
+    document.removeEventListener("mousemove", handleMouseMove);
+
+    document.removeEventListener("mouseup", handleMouseUp);
+
+    document.removeEventListener("dragstart", preventDefaultDrag);
+
     removeCanvas();
+}
+
+function preventDefaultDrag(event)
+{
+    if (!blackoutState.active)
+    {
+        return;
+    }
+
+    event.preventDefault();
 }
 
 chrome.runtime.onMessage.addListener((message) => {
