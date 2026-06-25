@@ -58,6 +58,23 @@ function removePreview()
     blackoutState.preview = null;
 }
 
+function createBlackoutBox(x, y, width, height)
+{
+    const box = document.createElement("div");
+
+    box.className = "blackout-box";
+
+    box.style.left = x + "px";
+    box.style.top = y + "px";
+
+    box.style.width = width + "px";
+    box.style.height = height + "px";
+
+    blackoutState.canvas.appendChild(box);
+
+    blackoutState.boxes.push(box);
+}
+
 function handleMouseDown(event)
 {
     if (!blackoutState.active)
@@ -115,7 +132,20 @@ function handleMouseUp(event)
 
     blackoutState.drawing = false;
 
+    const x = Math.min(event.clientX, blackoutState.startX);
+
+    const y = Math.min(event.clientY, blackoutState.startY);
+
+    const width = Math.abs(event.clientX - blackoutState.startX);
+
+    const height = Math.abs(event.clientY - blackoutState.startY);
+
     removePreview();
+
+    if (width > 0 && height > 0)
+    {
+        createBlackoutBox(x, y, width, height);
+    }
 }
 
 function removeCanvas() {

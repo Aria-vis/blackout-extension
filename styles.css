@@ -36,3 +36,14 @@
 
     -webkit-user-drag: none;
 }
+
+.blackout-box
+{
+    position: absolute;
+
+    background: #000000;
+
+    pointer-events: none;
+
+    box-sizing: border-box;
+}
