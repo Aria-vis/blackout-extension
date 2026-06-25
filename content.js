@@ -70,6 +70,19 @@ function createBlackoutBox(x, y, width, height)
     box.style.width = width + "px";
     box.style.height = height + "px";
 
+    const eyeButton = document.createElement("div");
+
+    eyeButton.className = "blackout-eye";
+
+    eyeButton.textContent = "👁";
+
+    eyeButton.addEventListener("click", (event) =>
+    {
+        event.stopPropagation();
+
+        box.classList.toggle("hidden");
+    });
+
     const deleteButton = document.createElement("div");
 
     deleteButton.className = "blackout-delete";
@@ -85,6 +98,8 @@ function createBlackoutBox(x, y, width, height)
         blackoutState.boxes =
             blackoutState.boxes.filter(item => item !== box);
     });
+
+    box.appendChild(eyeButton);
 
     box.appendChild(deleteButton);
 

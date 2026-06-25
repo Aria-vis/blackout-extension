@@ -83,3 +83,51 @@
 {
     opacity: 1;
 }
+
+.blackout-box.hidden
+{
+    background: transparent;
+
+    border: 2px dashed rgba(0, 0, 0, 0.45);
+}
+
+.blackout-eye
+{
+    position: absolute;
+
+    top: -10px;
+    right: 15px;
+
+    width: 20px;
+    height: 20px;
+
+    border-radius: 50%;
+
+    background: #007aff;
+
+    color: white;
+
+    font-size: 13px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    cursor: pointer;
+
+    opacity: 0;
+
+    transition: opacity 0.15s ease;
+}
+
+.blackout-box:hover .blackout-eye
+{
+    opacity: 1;
+}
+
+.blackout-box:hover .blackout-delete
+{
+    opacity: 1;
+}
