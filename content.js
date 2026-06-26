@@ -85,25 +85,25 @@ async function saveBoxes() {
     console.log("BlackOut saved");
 }
 
-function createBlackoutBox(x, y, width, height) {
+async function loadBoxes() {
+    const key = getStorageKey();
+
+    const result = await chrome.storage.local.get(key);
+
+    const savedBoxes = result[key] || [];
+
+    for (const boxData of savedBoxes) {
+        createBlackoutBox(boxData, false);
+    }
+
+    console.log("BlackOut loaded");
+}
+
+function createBlackoutBox(boxData, shouldSave = true) {
     const box = document.createElement("div");
+    boxData.element = box;
 
     box.className = "blackout-box";
-
-    const boxData =
-    {
-        element: box,
-
-        x,
-        y,
-
-        width,
-        height,
-
-        anchored: false,
-
-        hidden: false
-    };
 
     box.style.left = boxData.x + "px";
     box.style.top = boxData.y + "px";
@@ -193,6 +193,26 @@ function createBlackoutBox(x, y, width, height) {
         saveBoxes();
     });
 
+    if (boxData.hidden) {
+        eyeButton.textContent = "🙈";
+
+        box.classList.add("hidden");
+    }
+    else {
+        eyeButton.textContent = "👁";
+    }
+
+    if (boxData.anchored) {
+        pinButton.textContent = "📍";
+
+        box.classList.add("pinned");
+
+        box.style.position = "fixed";
+    }
+    else {
+        pinButton.textContent = "📌";
+    }
+
     box.appendChild(pinButton);
 
     box.appendChild(eyeButton);
@@ -203,7 +223,9 @@ function createBlackoutBox(x, y, width, height) {
 
     blackoutState.boxes.push(boxData);
 
-    saveBoxes();
+    if (shouldSave) {
+        saveBoxes();
+    }
 }
 
 function handleMouseDown(event) {
@@ -271,7 +293,18 @@ function handleMouseUp(event) {
     removePreview();
 
     if (width > 0 && height > 0) {
-        createBlackoutBox(x, y, width, height);
+        createBlackoutBox(
+            {
+                x,
+                y,
+
+                width,
+                height,
+
+                anchored: false,
+
+                hidden: false
+            });
     }
 }
 
@@ -287,7 +320,7 @@ function removeCanvas() {
     console.log("BlackOut canvas removed");
 }
 
-function activateBlackout() {
+async function activateBlackout() {
     blackoutState.active = true;
 
     document.body.style.cursor = "crosshair";
@@ -295,6 +328,10 @@ function activateBlackout() {
     document.documentElement.classList.add("blackout-active");
 
     createCanvas();
+
+    blackoutState.boxes = [];
+
+    await loadBoxes();
 
     document.addEventListener("mousedown", handleMouseDown);
 
