@@ -54,6 +54,37 @@ function removePreview() {
     blackoutState.preview = null;
 }
 
+function getStorageKey() {
+    return "blackout:" + window.location.href;
+}
+
+function serializeBoxes() {
+    return blackoutState.boxes.map(boxData => {
+        return {
+            x: boxData.x,
+            y: boxData.y,
+
+            width: boxData.width,
+            height: boxData.height,
+
+            anchored: boxData.anchored,
+
+            hidden: boxData.hidden
+        };
+    });
+}
+
+async function saveBoxes() {
+    const key = getStorageKey();
+
+    await chrome.storage.local.set(
+        {
+            [key]: serializeBoxes()
+        });
+
+    console.log("BlackOut saved");
+}
+
 function createBlackoutBox(x, y, width, height) {
     const box = document.createElement("div");
 
@@ -62,14 +93,23 @@ function createBlackoutBox(x, y, width, height) {
     const boxData =
     {
         element: box,
-        anchored: false
+
+        x,
+        y,
+
+        width,
+        height,
+
+        anchored: false,
+
+        hidden: false
     };
 
-    box.style.left = x + "px";
-    box.style.top = y + "px";
+    box.style.left = boxData.x + "px";
+    box.style.top = boxData.y + "px";
 
-    box.style.width = width + "px";
-    box.style.height = height + "px";
+    box.style.width = boxData.width + "px";
+    box.style.height = boxData.height + "px";
 
     const pinIndicator = document.createElement("div");
 
@@ -114,6 +154,8 @@ function createBlackoutBox(x, y, width, height) {
 
             box.classList.remove("pinned");
         }
+
+        saveBoxes();
     });
 
     const eyeButton = document.createElement("div");
@@ -125,14 +167,13 @@ function createBlackoutBox(x, y, width, height) {
     eyeButton.addEventListener("click", (event) => {
         event.stopPropagation();
 
-        box.classList.toggle("hidden");
+        boxData.hidden = !boxData.hidden;
 
-        if (box.classList.contains("hidden")) {
-            eyeButton.textContent = "🙈";
-        }
-        else {
-            eyeButton.textContent = "👁";
-        }
+        box.classList.toggle("hidden", boxData.hidden);
+
+        eyeButton.textContent = boxData.hidden ? "🙈" : "👁";
+
+        saveBoxes();
     });
 
     const deleteButton = document.createElement("div");
@@ -148,6 +189,8 @@ function createBlackoutBox(x, y, width, height) {
 
         blackoutState.boxes =
             blackoutState.boxes.filter(item => item.element !== box);
+
+        saveBoxes();
     });
 
     box.appendChild(pinButton);
@@ -159,6 +202,8 @@ function createBlackoutBox(x, y, width, height) {
     blackoutState.canvas.appendChild(box);
 
     blackoutState.boxes.push(boxData);
+
+    saveBoxes();
 }
 
 function handleMouseDown(event) {
