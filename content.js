@@ -30,10 +30,8 @@ function createCanvas() {
     console.log("BlackOut canvas created");
 }
 
-function createPreview()
-{
-    if (blackoutState.preview)
-    {
+function createPreview() {
+    if (blackoutState.preview) {
         return;
     }
 
@@ -46,10 +44,8 @@ function createPreview()
     blackoutState.preview = preview;
 }
 
-function removePreview()
-{
-    if (!blackoutState.preview)
-    {
+function removePreview() {
+    if (!blackoutState.preview) {
         return;
     }
 
@@ -58,11 +54,16 @@ function removePreview()
     blackoutState.preview = null;
 }
 
-function createBlackoutBox(x, y, width, height)
-{
+function createBlackoutBox(x, y, width, height) {
     const box = document.createElement("div");
 
     box.className = "blackout-box";
+
+    const boxData =
+    {
+        element: box,
+        anchored: false
+    };
 
     box.style.left = x + "px";
     box.style.top = y + "px";
@@ -70,17 +71,68 @@ function createBlackoutBox(x, y, width, height)
     box.style.width = width + "px";
     box.style.height = height + "px";
 
+    const pinIndicator = document.createElement("div");
+
+    pinIndicator.className = "blackout-pin-indicator";
+
+    pinIndicator.textContent = "📍";
+
+    box.appendChild(pinIndicator);
+
+    const pinButton = document.createElement("div");
+
+    pinButton.className = "blackout-pin";
+
+    pinButton.textContent = "📌";
+
+    pinButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+
+        const rect = box.getBoundingClientRect();
+
+        if (!boxData.anchored) {
+            box.style.position = "fixed";
+
+            box.style.left = rect.left + "px";
+            box.style.top = rect.top + "px";
+
+            boxData.anchored = true;
+
+            pinButton.textContent = "📍";
+
+            box.classList.add("pinned");
+        }
+        else {
+            box.style.position = "absolute";
+
+            box.style.left = window.scrollX + rect.left + "px";
+            box.style.top = window.scrollY + rect.top + "px";
+
+            boxData.anchored = false;
+
+            pinButton.textContent = "📌";
+
+            box.classList.remove("pinned");
+        }
+    });
+
     const eyeButton = document.createElement("div");
 
     eyeButton.className = "blackout-eye";
 
     eyeButton.textContent = "👁";
 
-    eyeButton.addEventListener("click", (event) =>
-    {
+    eyeButton.addEventListener("click", (event) => {
         event.stopPropagation();
 
         box.classList.toggle("hidden");
+
+        if (box.classList.contains("hidden")) {
+            eyeButton.textContent = "🙈";
+        }
+        else {
+            eyeButton.textContent = "👁";
+        }
     });
 
     const deleteButton = document.createElement("div");
@@ -89,15 +141,16 @@ function createBlackoutBox(x, y, width, height)
 
     deleteButton.textContent = "✕";
 
-    deleteButton.addEventListener("click", (event) =>
-    {
+    deleteButton.addEventListener("click", (event) => {
         event.stopPropagation();
 
         box.remove();
 
         blackoutState.boxes =
-            blackoutState.boxes.filter(item => item !== box);
+            blackoutState.boxes.filter(item => item.element !== box);
     });
+
+    box.appendChild(pinButton);
 
     box.appendChild(eyeButton);
 
@@ -105,18 +158,15 @@ function createBlackoutBox(x, y, width, height)
 
     blackoutState.canvas.appendChild(box);
 
-    blackoutState.boxes.push(box);
+    blackoutState.boxes.push(boxData);
 }
 
-function handleMouseDown(event)
-{
-    if (!blackoutState.active)
-    {
+function handleMouseDown(event) {
+    if (!blackoutState.active) {
         return;
     }
 
-    if (event.button !== 0)
-    {
+    if (event.button !== 0) {
         return;
     }
 
@@ -130,18 +180,18 @@ function handleMouseDown(event)
     createPreview();
 }
 
-function handleMouseMove(event)
-{
-    if (!blackoutState.drawing)
-    {
+function handleMouseMove(event) {
+    if (!blackoutState.drawing) {
         return;
     }
 
     event.preventDefault();
 
-    const x = Math.min(event.clientX, blackoutState.startX);
+    const x = window.scrollX +
+        Math.min(event.clientX, blackoutState.startX);
 
-    const y = Math.min(event.clientY, blackoutState.startY);
+    const y = window.scrollY +
+        Math.min(event.clientY, blackoutState.startY);
 
     const width = Math.abs(event.clientX - blackoutState.startX);
 
@@ -156,18 +206,18 @@ function handleMouseMove(event)
     blackoutState.preview.style.height = height + "px";
 }
 
-function handleMouseUp(event)
-{
-    if (!blackoutState.drawing)
-    {
+function handleMouseUp(event) {
+    if (!blackoutState.drawing) {
         return;
     }
 
     blackoutState.drawing = false;
 
-    const x = Math.min(event.clientX, blackoutState.startX);
+    const x = window.scrollX +
+        Math.min(event.clientX, blackoutState.startX);
 
-    const y = Math.min(event.clientY, blackoutState.startY);
+    const y = window.scrollY +
+        Math.min(event.clientY, blackoutState.startY);
 
     const width = Math.abs(event.clientX - blackoutState.startX);
 
@@ -175,8 +225,7 @@ function handleMouseUp(event)
 
     removePreview();
 
-    if (width > 0 && height > 0)
-    {
+    if (width > 0 && height > 0) {
         createBlackoutBox(x, y, width, height);
     }
 }
@@ -233,10 +282,8 @@ function deactivateBlackout() {
     removeCanvas();
 }
 
-function preventDefaultDrag(event)
-{
-    if (!blackoutState.active)
-    {
+function preventDefaultDrag(event) {
+    if (!blackoutState.active) {
         return;
     }
 
