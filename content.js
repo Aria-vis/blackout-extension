@@ -11,7 +11,13 @@ const blackoutState =
     startX: 0,
     startY: 0,
 
-    preview: null
+    preview: null,
+
+    colorDialog: null,
+
+    selectedBox: null,
+
+    selectedBoxData: null
 };
 
 function createCanvas() {
@@ -69,7 +75,9 @@ function serializeBoxes() {
 
             anchored: boxData.anchored,
 
-            hidden: boxData.hidden
+            hidden: boxData.hidden,
+
+            color: boxData.color
         };
     });
 }
@@ -99,11 +107,102 @@ async function loadBoxes() {
     console.log("BlackOut loaded");
 }
 
+function createColorDialog() {
+    if (blackoutState.colorDialog) {
+        return;
+    }
+
+    const dialog = document.createElement("div");
+
+    dialog.id = "blackout-color-dialog";
+
+    dialog.innerHTML =
+        `
+        <div class="blackout-dialog-title">
+            BlackOut Color
+        </div>
+
+        <input
+            id="blackout-color-input"
+            type="color"
+            value="#000000">
+
+        <label class="blackout-apply-all">
+            <input
+                id="blackout-apply-all"
+                type="checkbox"
+                >
+
+            Apply to all boxes
+        </label>
+
+        <button id="blackout-close-dialog">
+            Close
+        </button>
+    `;
+
+    document.body.appendChild(dialog);
+
+    blackoutState.colorDialog = dialog;
+
+    const colorInput = document.getElementById("blackout-color-input");
+
+    const applyAllCheckbox =
+        document.getElementById("blackout-apply-all");
+
+    colorInput.addEventListener("input", () => {
+        if (!blackoutState.selectedBoxData) {
+            return;
+        }
+
+        if (applyAllCheckbox.checked) {
+            blackoutState.boxes.forEach(boxData => {
+                boxData.color = colorInput.value;
+
+                if (!boxData.hidden) {
+                    boxData.element.style.background =
+                        colorInput.value;
+                }
+            });
+        }
+        else {
+            blackoutState.selectedBoxData.color =
+                colorInput.value;
+
+            if (!blackoutState.selectedBoxData.hidden) {
+                blackoutState.selectedBox.style.background =
+                    colorInput.value;
+            }
+        }
+
+        saveBoxes();
+    });
+
+    document
+        .getElementById("blackout-close-dialog")
+        .addEventListener("click", hideColorDialog);
+}
+
+function hideColorDialog() {
+    blackoutState.colorDialog.style.display = "none";
+}
+
+function showColorDialog(boxData, box) {
+    blackoutState.selectedBox = box;
+
+    blackoutState.selectedBoxData = boxData;
+
+    document.getElementById("blackout-color-input").value = boxData.color;
+
+    blackoutState.colorDialog.style.display = "block";
+}
+
 function createBlackoutBox(boxData, shouldSave = true) {
     const box = document.createElement("div");
     boxData.element = box;
 
     box.className = "blackout-box";
+    box.style.background = boxData.color;
 
     box.style.left = boxData.x + "px";
     box.style.top = boxData.y + "px";
@@ -118,6 +217,20 @@ function createBlackoutBox(boxData, shouldSave = true) {
     pinIndicator.textContent = "📍";
 
     box.appendChild(pinIndicator);
+
+    const colorButton = document.createElement("div");
+
+    colorButton.className = "blackout-color";
+
+    colorButton.textContent = "🎨";
+
+    colorButton.title = "Change Color";
+
+    colorButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+
+        showColorDialog(boxData, box);
+    });
 
     const pinButton = document.createElement("div");
 
@@ -169,9 +282,17 @@ function createBlackoutBox(boxData, shouldSave = true) {
 
         boxData.hidden = !boxData.hidden;
 
-        box.classList.toggle("hidden", boxData.hidden);
+        box.classList.toggle("hidden");
 
-        eyeButton.textContent = boxData.hidden ? "🙈" : "👁";
+        if (boxData.hidden) {
+            box.style.background = "transparent";
+        }
+        else {
+            box.style.background = boxData.color;
+        }
+
+        eyeButton.textContent =
+            boxData.hidden ? "🙈" : "👁";
 
         saveBoxes();
     });
@@ -197,9 +318,13 @@ function createBlackoutBox(boxData, shouldSave = true) {
         eyeButton.textContent = "🙈";
 
         box.classList.add("hidden");
+
+        box.style.background = "transparent";
     }
     else {
         eyeButton.textContent = "👁";
+
+        box.style.background = boxData.color;
     }
 
     if (boxData.anchored) {
@@ -212,6 +337,8 @@ function createBlackoutBox(boxData, shouldSave = true) {
     else {
         pinButton.textContent = "📌";
     }
+
+    box.appendChild(colorButton);
 
     box.appendChild(pinButton);
 
@@ -303,7 +430,9 @@ function handleMouseUp(event) {
 
                 anchored: false,
 
-                hidden: false
+                hidden: false,
+
+                color: "#000000"
             });
     }
 }
@@ -328,6 +457,8 @@ async function activateBlackout() {
     document.documentElement.classList.add("blackout-active");
 
     createCanvas();
+
+    createColorDialog();
 
     blackoutState.boxes = [];
 

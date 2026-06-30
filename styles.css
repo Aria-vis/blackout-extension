@@ -79,15 +79,8 @@
     transition: opacity 0.15s ease;
 }
 
-.blackout-box:hover .blackout-delete
-{
-    opacity: 1;
-}
-
 .blackout-box.hidden
 {
-    background: transparent;
-
     border: 2px dashed rgba(0, 0, 0, 0.45);
 }
 
@@ -122,16 +115,6 @@
     transition: opacity 0.15s ease;
 }
 
-.blackout-box:hover .blackout-eye
-{
-    opacity: 1;
-}
-
-.blackout-box:hover .blackout-delete
-{
-    opacity: 1;
-}
-
 .blackout-pin
 {
     position: absolute;
@@ -163,16 +146,11 @@
     transition: opacity 0.15s ease;
 }
 
-.blackout-box:hover .blackout-pin
-{
-    opacity: 1;
-}
-
 .blackout-pin-indicator
 {
     position: absolute;
 
-    top: 4px;
+    bottom: 4px;
     left: 4px;
 
     font-size: 14px;
@@ -185,4 +163,125 @@
 .blackout-box.pinned .blackout-pin-indicator
 {
     display: block;
+}
+
+.blackout-color
+{
+    position: absolute;
+
+    top: 6px;
+
+    left: 6px;
+
+    width: 24px;
+    height: 24px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    background: rgba(255,255,255,0.15);
+
+    opacity: 0;
+
+    transition: opacity 0.2s;
+}
+
+.blackout-box:hover .blackout-color,
+.blackout-box:hover .blackout-pin,
+.blackout-box:hover .blackout-eye,
+.blackout-box:hover .blackout-delete
+{
+    opacity: 1;
+}
+
+#blackout-color-dialog
+{
+    position: fixed;
+
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    min-width: 260px;
+
+    padding: 20px;
+
+    background: white;
+
+    border-radius: 12px;
+
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+
+    z-index: 2147483647;
+
+    display: none;
+}
+
+.blackout-dialog-title
+{
+    font-size: 18px;
+
+    font-weight: bold;
+
+    margin-bottom: 16px;
+
+    text-align: center;
+}
+
+#blackout-color-input
+{
+    width: 100%;
+
+    height: 45px;
+
+    border: none;
+
+    margin-bottom: 16px;
+
+    cursor: pointer;
+}
+
+#blackout-close-dialog
+{
+    width: 100%;
+
+    padding: 8px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: #007aff;
+
+    color: white;
+
+    cursor: pointer;
+}
+
+#blackout-close-dialog:hover
+{
+    background: #005ecb;
+}
+
+.blackout-apply-all
+{
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin: 14px 0;
+
+    font-size: 14px;
+
+    cursor: pointer;
 }
